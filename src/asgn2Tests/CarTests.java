@@ -16,40 +16,53 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import asgn2Exceptions.VehicleException;
+import asgn2Vehicles.Car;
+
 /**
  * @author hogan
  *
  */
 public class CarTests {
+	
+	Car C, SC;
+	String vehID;
+	int arrivalTime;
 
 	/**
 	 * @throws java.lang.Exception
 	 */
 	@Before
 	public void setUp() throws Exception {
-	}
-
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@After
-	public void tearDown() throws Exception {
-	}
-
-	/**
-	 * Test method for {@link asgn2Vehicles.Car#toString()}.
-	 */
-	@Test
-	public void testToString() {
-		fail("Not yet implemented"); // TODO
+		arrivalTime = 1;
+		
+		vehID = "C1";
+		C = new Car(vehID, arrivalTime, false);
+		
+		vehID = "S1";
+		SC = new Car(vehID, arrivalTime, true);
 	}
 
 	/**
 	 * Test method for {@link asgn2Vehicles.Car#Car(java.lang.String, int, boolean)}.
+	 * @throws VehicleException 
 	 */
+	@Test (expected = VehicleException.class)
+	public void testCarArrivalTimeOneBelowBoundary() throws VehicleException {
+		arrivalTime = -1;
+		C = new Car(vehID, arrivalTime, false);
+	}
+	
+	@Test (expected = VehicleException.class)
+	public void testCarArrivalTimeOnBoundary() throws VehicleException {
+		arrivalTime = 0;
+		C = new Car(vehID, arrivalTime, false);
+	}
+	
 	@Test
-	public void testCar() {
-		fail("Not yet implemented"); // TODO
+	public void testCarArrivalTimeOneAboveBoundary() throws VehicleException {
+		arrivalTime = 1;
+		C = new Car(vehID, arrivalTime, false);
 	}
 
 	/**
@@ -57,7 +70,8 @@ public class CarTests {
 	 */
 	@Test
 	public void testIsSmall() {
-		fail("Not yet implemented"); // TODO
+		assertFalse(C.isSmall());
+		assertTrue(SC.isSmall());
 	}
 
 }

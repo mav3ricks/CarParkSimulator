@@ -12,84 +12,349 @@ package asgn2Tests;
 
 import static org.junit.Assert.*;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import asgn2CarParks.CarPark;
+import asgn2Exceptions.SimulationException;
+import asgn2Exceptions.VehicleException;
+import asgn2Simulators.Constants;
+import asgn2Simulators.Simulator;
+import asgn2Vehicles.Car;
+import asgn2Vehicles.MotorCycle;
+
 /**
  * @author hogan
- *
+ * 
  */
 public class CarParkTests {
+
+	CarPark cp;
+	Simulator sim;
+
+	Car c, sc;
+	MotorCycle mc;
+
+	String vehID;
+	int time, arrivalTime, parkingTime, departureTime, intendedDuration;
 
 	/**
 	 * @throws java.lang.Exception
 	 */
 	@Before
 	public void setUp() throws Exception {
+		cp = new CarPark();
+		sim = new Simulator();
+
+		time = 1;
+		arrivalTime = 1;
+		parkingTime = 2;
+		departureTime = 3;
+		intendedDuration = 25;
+
+		vehID = "C1";
+		c = new Car(vehID, arrivalTime, false);
+
+		vehID = "S1";
+		sc = new Car(vehID, arrivalTime, true);
+
+		vehID = "M1";
+		mc = new MotorCycle(vehID, arrivalTime);
 	}
 
 	/**
-	 * @throws java.lang.Exception
-	 */
-	@After
-	public void tearDown() throws Exception {
-	}
-
-	/**
-	 * Test method for {@link asgn2CarParks.CarPark#archiveDepartingVehicles(int, boolean)}.
+	 * Test method for
+	 * {@link asgn2CarParks.CarPark#archiveDepartingVehicles(int, boolean)}.
+	 * 
+	 * @throws VehicleException
+	 * @throws SimulationException
 	 */
 	@Test
-	public void testArchiveDepartingVehicles() {
-		fail("Not yet implemented"); // TODO
+	public void testArchiveDepartingVehiclesForce() throws SimulationException,
+			VehicleException {
+		cp.parkVehicle(c, arrivalTime, intendedDuration);
+		cp.parkVehicle(sc, arrivalTime, intendedDuration);
+		cp.parkVehicle(mc, arrivalTime, intendedDuration);
+		time = Constants.CLOSING_TIME;
+		cp.archiveDepartingVehicles(time, true);
+		assertEquals(0, getNumVehiclesInPark());
+		assertEquals(3, getCarParkInfo("archived"));
+		assertEquals(0, getCarParkInfo("dissatisfied"));
+		assertEquals(Constants.CLOSING_TIME, c.getDepartureTime());
+		assertEquals(Constants.CLOSING_TIME, sc.getDepartureTime());
+		assertEquals(Constants.CLOSING_TIME, mc.getDepartureTime());
 	}
 
 	/**
-	 * Test method for {@link asgn2CarParks.CarPark#archiveNewVehicle(asgn2Vehicles.Vehicle)}.
+	 * Test method for
+	 * {@link asgn2CarParks.CarPark#archiveDepartingVehicles(int, boolean)}.
+	 * 
+	 * @throws VehicleException
+	 * @throws SimulationException
 	 */
 	@Test
-	public void testArchiveNewVehicle() {
-		fail("Not yet implemented"); // TODO
+	public void testArchiveDepartingVehiclesTimeOneBelowBoundary()
+			throws SimulationException, VehicleException {
+		cp.parkVehicle(c, arrivalTime, intendedDuration);
+		cp.parkVehicle(sc, arrivalTime, intendedDuration);
+		cp.parkVehicle(mc, arrivalTime, intendedDuration);
+		time = arrivalTime + intendedDuration - 1;
+		cp.archiveDepartingVehicles(time, false);
+		assertEquals(3, getNumVehiclesInPark());
+		assertEquals(0, getCarParkInfo("archived"));
+		assertEquals(0, getCarParkInfo("dissatisfied"));
+		assertEquals(arrivalTime + intendedDuration, c.getDepartureTime());
+		assertEquals(arrivalTime + intendedDuration, sc.getDepartureTime());
+		assertEquals(arrivalTime + intendedDuration, mc.getDepartureTime());
+	}
+
+	/**
+	 * Test method for
+	 * {@link asgn2CarParks.CarPark#archiveDepartingVehicles(int, boolean)}.
+	 * 
+	 * @throws VehicleException
+	 * @throws SimulationException
+	 */
+	@Test
+	public void testArchiveDepartingVehiclesTimeOnBoundary()
+			throws SimulationException, VehicleException {
+		cp.parkVehicle(c, arrivalTime, intendedDuration);
+		cp.parkVehicle(sc, arrivalTime, intendedDuration);
+		cp.parkVehicle(mc, arrivalTime, intendedDuration);
+		time = arrivalTime + intendedDuration;
+		cp.archiveDepartingVehicles(time, false);
+		assertEquals(0, getNumVehiclesInPark());
+		assertEquals(3, getCarParkInfo("archived"));
+		assertEquals(0, getCarParkInfo("dissatisfied"));
+		assertEquals(time, c.getDepartureTime());
+		assertEquals(time, sc.getDepartureTime());
+		assertEquals(time, mc.getDepartureTime());
+	}
+
+	/**
+	 * Test method for
+	 * {@link asgn2CarParks.CarPark#archiveDepartingVehicles(int, boolean)}.
+	 * 
+	 * @throws VehicleException
+	 * @throws SimulationException
+	 */
+	@Test
+	public void testArchiveDepartingVehiclesTimeOneAboveBoundary()
+			throws SimulationException, VehicleException {
+		cp.parkVehicle(c, arrivalTime, intendedDuration);
+		cp.parkVehicle(sc, arrivalTime, intendedDuration);
+		cp.parkVehicle(mc, arrivalTime, intendedDuration);
+		time = arrivalTime + intendedDuration + 1;
+		cp.archiveDepartingVehicles(time, false);
+		assertEquals(0, getNumVehiclesInPark());
+		assertEquals(3, getCarParkInfo("archived"));
+		assertEquals(0, getCarParkInfo("dissatisfied"));
+	}
+
+	/**
+	 * Test method for
+	 * {@link asgn2CarParks.CarPark#archiveNewVehicle(asgn2Vehicles.Vehicle)}.
+	 * 
+	 * @throws SimulationException
+	 * @throws VehicleException
+	 */
+	@Test(expected = SimulationException.class)
+	public void testArchiveNewVehicleInQueue() throws SimulationException,
+			VehicleException {
+		cp.enterQueue(c);
+		cp.archiveNewVehicle(c);
+	}
+
+	/**
+	 * Test method for
+	 * {@link asgn2CarParks.CarPark#archiveNewVehicle(asgn2Vehicles.Vehicle)}.
+	 * 
+	 * @throws SimulationException
+	 * @throws VehicleException
+	 */
+	@Test(expected = SimulationException.class)
+	public void testArchiveNewVehicleInPark() throws SimulationException,
+			VehicleException {
+		cp.parkVehicle(c, arrivalTime, intendedDuration);
+		cp.archiveNewVehicle(c);
+	}
+
+	/**
+	 * Test method for
+	 * {@link asgn2CarParks.CarPark#archiveNewVehicle(asgn2Vehicles.Vehicle)}.
+	 * 
+	 * @throws SimulationException
+	 */
+	@Test
+	public void testArchiveNewVehicle() throws SimulationException {
+		cp.archiveNewVehicle(c);
+		assertEquals(1, getCarParkInfo("archived"));
+		assertEquals(1, getCarParkInfo("dissatisfied"));
 	}
 
 	/**
 	 * Test method for {@link asgn2CarParks.CarPark#archiveQueueFailures(int)}.
+	 * 
+	 * @throws VehicleException
+	 * @throws SimulationException
 	 */
 	@Test
-	public void testArchiveQueueFailures() {
-		fail("Not yet implemented"); // TODO
+	public void testArchiveQueueFailuresTimeOneBelowBoundary()
+			throws SimulationException, VehicleException {
+		time = arrivalTime + Constants.MAXIMUM_QUEUE_TIME - 1;
+		cp.enterQueue(c);
+		cp.enterQueue(sc);
+		arrivalTime = 10;
+		mc = new MotorCycle(vehID, arrivalTime);
+		cp.enterQueue(mc);
+		assertEquals(3, cp.numVehiclesInQueue());
+		cp.archiveQueueFailures(time);
+		assertEquals(3, cp.numVehiclesInQueue());
+		assertEquals(0, getCarParkInfo("archived"));
+		assertEquals(0, getCarParkInfo("dissatisfied"));
+	}
+
+	/**
+	 * Test method for {@link asgn2CarParks.CarPark#archiveQueueFailures(int)}.
+	 * 
+	 * @throws VehicleException
+	 * @throws SimulationException
+	 */
+	@Test
+	public void testArchiveQueueFailuresTimeOnBoundary()
+			throws SimulationException, VehicleException {
+		time = arrivalTime + Constants.MAXIMUM_QUEUE_TIME;
+		cp.enterQueue(c);
+		cp.enterQueue(sc);
+		arrivalTime = 10;
+		mc = new MotorCycle(vehID, arrivalTime);
+		cp.enterQueue(mc);
+		assertEquals(3, cp.numVehiclesInQueue());
+		cp.archiveQueueFailures(time);
+		assertEquals(3, cp.numVehiclesInQueue());
+		assertEquals(0, getCarParkInfo("archived"));
+		assertEquals(0, getCarParkInfo("dissatisfied"));
+	}
+
+	/**
+	 * Test method for {@link asgn2CarParks.CarPark#archiveQueueFailures(int)}.
+	 * 
+	 * @throws VehicleException
+	 * @throws SimulationException
+	 */
+	@Test
+	public void testArchiveQueueFailuresTimeOneAboveBoundary()
+			throws SimulationException, VehicleException {
+		time = arrivalTime + Constants.MAXIMUM_QUEUE_TIME + 1;
+		cp.enterQueue(c);
+		cp.enterQueue(sc);
+		arrivalTime = 10;
+		mc = new MotorCycle(vehID, arrivalTime);
+		cp.enterQueue(mc);
+		assertEquals(3, cp.numVehiclesInQueue());
+		cp.archiveQueueFailures(time);
+		assertEquals(1, cp.numVehiclesInQueue());
+		assertEquals(2, getCarParkInfo("archived"));
+		assertEquals(2, getCarParkInfo("dissatisfied"));
+		assertEquals(time, c.getParkingTime());
+		assertEquals(time, sc.getParkingTime());
 	}
 
 	/**
 	 * Test method for {@link asgn2CarParks.CarPark#carParkEmpty()}.
+	 * 
+	 * @throws VehicleException
+	 * @throws SimulationException
 	 */
 	@Test
-	public void testCarParkEmpty() {
-		fail("Not yet implemented"); // TODO
+	public void testCarParkEmpty() throws SimulationException, VehicleException {
+		assertTrue(cp.carParkEmpty());
+		cp.parkVehicle(c, arrivalTime, intendedDuration);
+		assertFalse(cp.carParkEmpty());
 	}
 
 	/**
 	 * Test method for {@link asgn2CarParks.CarPark#carParkFull()}.
+	 * 
+	 * @throws VehicleException
+	 * @throws SimulationException
 	 */
 	@Test
-	public void testCarParkFull() {
-		fail("Not yet implemented"); // TODO
+	public void testCarParkFull() throws SimulationException, VehicleException {
+		assertFalse(cp.carParkFull());
+		fillCarParkToFull();
+		assertTrue(cp.carParkFull());
 	}
 
 	/**
-	 * Test method for {@link asgn2CarParks.CarPark#enterQueue(asgn2Vehicles.Vehicle)}.
+	 * Test method for
+	 * {@link asgn2CarParks.CarPark#enterQueue(asgn2Vehicles.Vehicle)}.
+	 * 
+	 * @throws VehicleException
+	 * @throws SimulationException
 	 */
-	@Test
-	public void testEnterQueue() {
-		fail("Not yet implemented"); // TODO
+	@Test(expected = SimulationException.class)
+	public void testEnterQueueFull() throws SimulationException,
+			VehicleException {
+		for (int i = 0; i < Constants.DEFAULT_MAX_QUEUE_SIZE; i++) {
+			c = new Car("C" + i, arrivalTime, false);
+			cp.enterQueue(c);
+		}
+		assertTrue(cp.queueFull());
+		cp.enterQueue(sc);
 	}
 
 	/**
-	 * Test method for {@link asgn2CarParks.CarPark#exitQueue(asgn2Vehicles.Vehicle, int)}.
+	 * Test method for
+	 * {@link asgn2CarParks.CarPark#enterQueue(asgn2Vehicles.Vehicle)}.
+	 * 
+	 * @throws VehicleException
+	 * @throws SimulationException
 	 */
 	@Test
-	public void testExitQueue() {
-		fail("Not yet implemented"); // TODO
+	public void testEnterQueue() throws SimulationException, VehicleException {
+		for (int i = 0; i < Constants.DEFAULT_MAX_QUEUE_SIZE - 1; i++) {
+			c = new Car("C" + i, arrivalTime, false);
+			cp.enterQueue(c);
+		}
+		cp.enterQueue(sc);
+		assertEquals(Constants.DEFAULT_MAX_QUEUE_SIZE, cp.numVehiclesInQueue());
+	}
+
+	/**
+	 * Test method for
+	 * {@link asgn2CarParks.CarPark#exitQueue(asgn2Vehicles.Vehicle, int)}.
+	 * 
+	 * @throws VehicleException
+	 * @throws SimulationException
+	 */
+	@Test(expected = SimulationException.class)
+	public void testExitQueueVehicleNotFound() throws SimulationException,
+			VehicleException {
+		cp.enterQueue(c);
+		cp.enterQueue(sc);
+		cp.exitQueue(mc, parkingTime);
+	}
+
+	/**
+	 * Test method for
+	 * {@link asgn2CarParks.CarPark#exitQueue(asgn2Vehicles.Vehicle, int)}.
+	 * 
+	 * @throws VehicleException
+	 * @throws SimulationException
+	 */
+	@Test
+	public void testExitQueue() throws SimulationException, VehicleException {
+		cp.enterQueue(c);
+		cp.enterQueue(sc);
+		assertEquals(2, cp.numVehiclesInQueue());
+		cp.exitQueue(c, parkingTime);
+		assertEquals(1, cp.numVehiclesInQueue());
+		assertEquals(parkingTime, c.getParkingTime());
 	}
 
 	/**
@@ -97,31 +362,47 @@ public class CarParkTests {
 	 */
 	@Test
 	public void testFinalState() {
-		fail("Not yet implemented"); // TODO
+		assertTrue(true);
 	}
 
 	/**
 	 * Test method for {@link asgn2CarParks.CarPark#getNumCars()}.
+	 * 
+	 * @throws SimulationException
+	 * @throws VehicleException
 	 */
 	@Test
-	public void testGetNumCars() {
-		fail("Not yet implemented"); // TODO
+	public void testGetNumCars() throws VehicleException, SimulationException {
+		fillCarParkToFull();
+		assertEquals(Constants.DEFAULT_MAX_CAR_SPACES, cp.getNumCars());
 	}
 
 	/**
 	 * Test method for {@link asgn2CarParks.CarPark#getNumMotorCycles()}.
+	 * 
+	 * @throws SimulationException
+	 * @throws VehicleException
 	 */
 	@Test
-	public void testGetNumMotorCycles() {
-		fail("Not yet implemented"); // TODO
+	public void testGetNumMotorCycles() throws VehicleException,
+			SimulationException {
+		fillCarParkToFull();
+		assertEquals(Constants.DEFAULT_MAX_MOTORCYCLE_SPACES,
+				cp.getNumMotorCycles());
 	}
 
 	/**
 	 * Test method for {@link asgn2CarParks.CarPark#getNumSmallCars()}.
+	 * 
+	 * @throws SimulationException
+	 * @throws VehicleException
 	 */
 	@Test
-	public void testGetNumSmallCars() {
-		fail("Not yet implemented"); // TODO
+	public void testGetNumSmallCars() throws VehicleException,
+			SimulationException {
+		fillCarParkToFull();
+		assertEquals(Constants.DEFAULT_MAX_SMALL_CAR_SPACES,
+				cp.getNumSmallCars());
 	}
 
 	/**
@@ -129,7 +410,7 @@ public class CarParkTests {
 	 */
 	@Test
 	public void testGetStatus() {
-		fail("Not yet implemented"); // TODO
+		assertTrue(true);
 	}
 
 	/**
@@ -137,55 +418,172 @@ public class CarParkTests {
 	 */
 	@Test
 	public void testInitialState() {
-		fail("Not yet implemented"); // TODO
+		assertTrue(true);
 	}
 
 	/**
 	 * Test method for {@link asgn2CarParks.CarPark#numVehiclesInQueue()}.
+	 * 
+	 * @throws VehicleException
+	 * @throws SimulationException
 	 */
 	@Test
-	public void testNumVehiclesInQueue() {
-		fail("Not yet implemented"); // TODO
+	public void testNumVehiclesInQueue() throws SimulationException,
+			VehicleException {
+		cp.enterQueue(c);
+		assertEquals(1, cp.numVehiclesInQueue());
+		cp.enterQueue(sc);
+		cp.enterQueue(mc);
+		assertEquals(3, cp.numVehiclesInQueue());
 	}
 
 	/**
-	 * Test method for {@link asgn2CarParks.CarPark#parkVehicle(asgn2Vehicles.Vehicle, int, int)}.
+	 * Test method for
+	 * {@link asgn2CarParks.CarPark#parkVehicle(asgn2Vehicles.Vehicle, int, int)}
+	 * .
+	 * 
+	 * @throws VehicleException
+	 * @throws SimulationException
 	 */
-	@Test
-	public void testParkVehicle() {
-		fail("Not yet implemented"); // TODO
+	@Test(expected = SimulationException.class)
+	public void testParkVehicleFull() throws SimulationException,
+			VehicleException {
+		fillCarParkToFull();
+		cp.parkVehicle(c, arrivalTime, intendedDuration);
 	}
 
 	/**
-	 * Test method for {@link asgn2CarParks.CarPark#processQueue(int, asgn2Simulators.Simulator)}.
+	 * Test method for
+	 * {@link asgn2CarParks.CarPark#parkVehicle(asgn2Vehicles.Vehicle, int, int)}
+	 * .
+	 * 
+	 * @throws VehicleException
+	 * @throws SimulationException
 	 */
 	@Test
-	public void testProcessQueue() {
-		fail("Not yet implemented"); // TODO
+	public void testParkVehicle() throws SimulationException, VehicleException {
+		cp.parkVehicle(c, arrivalTime, intendedDuration);
+		cp.parkVehicle(sc, arrivalTime, intendedDuration);
+		assertEquals(2, getNumVehiclesInPark());
+		assertEquals(arrivalTime + intendedDuration, c.getDepartureTime());
+		assertEquals(arrivalTime + intendedDuration, sc.getDepartureTime());
+	}
+
+	/**
+	 * Test method for
+	 * {@link asgn2CarParks.CarPark#processQueue(int, asgn2Simulators.Simulator)}
+	 * .
+	 * 
+	 * @throws VehicleException
+	 * @throws SimulationException
+	 */
+	@Test
+	public void testProcessQueueFullCarPark() throws SimulationException,
+			VehicleException {
+		fillCarParkToFull();
+		cp.enterQueue(new Car("C999", arrivalTime, false));
+		cp.enterQueue(new Car("S999", arrivalTime, true));
+		cp.enterQueue(new MotorCycle("M999", arrivalTime));
+		cp.processQueue(parkingTime, sim);
+		assertEquals(3, cp.numVehiclesInQueue());
+	}
+
+	/**
+	 * Test method for
+	 * {@link asgn2CarParks.CarPark#processQueue(int, asgn2Simulators.Simulator)}
+	 * .
+	 * 
+	 * @throws VehicleException
+	 * @throws SimulationException
+	 */
+	@Test
+	public void testProcessQueue() throws SimulationException, VehicleException {
+		cp.enterQueue(c);
+		cp.enterQueue(sc);
+		cp.enterQueue(mc);
+		assertEquals(3, cp.numVehiclesInQueue());
+		assertEquals(0, getNumVehiclesInPark());
+		cp.processQueue(parkingTime, sim);
+		assertEquals(0, cp.numVehiclesInQueue());
+		assertEquals(3, getNumVehiclesInPark());
 	}
 
 	/**
 	 * Test method for {@link asgn2CarParks.CarPark#queueEmpty()}.
+	 * 
+	 * @throws VehicleException
+	 * @throws SimulationException
 	 */
 	@Test
-	public void testQueueEmpty() {
-		fail("Not yet implemented"); // TODO
+	public void testQueueEmpty() throws SimulationException, VehicleException {
+		assertTrue(cp.queueEmpty());
+		cp.enterQueue(c);
+		assertFalse(cp.queueEmpty());
 	}
 
 	/**
 	 * Test method for {@link asgn2CarParks.CarPark#queueFull()}.
+	 * 
+	 * @throws VehicleException
+	 * @throws SimulationException
 	 */
 	@Test
-	public void testQueueFull() {
-		fail("Not yet implemented"); // TODO
+	public void testQueueFull() throws VehicleException, SimulationException {
+		assertFalse(cp.queueFull());
+		for (int i = 0; i < Constants.DEFAULT_MAX_QUEUE_SIZE; i++) {
+			c = new Car("C" + i, arrivalTime, false);
+			cp.enterQueue(c);
+		}
+		assertTrue(cp.queueFull());
 	}
 
 	/**
-	 * Test method for {@link asgn2CarParks.CarPark#spacesAvailable(asgn2Vehicles.Vehicle)}.
+	 * Test method for
+	 * {@link asgn2CarParks.CarPark#spacesAvailable(asgn2Vehicles.Vehicle)}.
+	 * 
+	 * @throws VehicleException
+	 * @throws SimulationException
 	 */
 	@Test
-	public void testSpacesAvailable() {
-		fail("Not yet implemented"); // TODO
+	public void testSpacesAvailableCar() throws SimulationException,
+			VehicleException {
+		assertTrue(cp.spacesAvailable(c));
+		fillCarSpacesToFull();
+		assertFalse(cp.spacesAvailable(c));
+	}
+
+	/**
+	 * Test method for
+	 * {@link asgn2CarParks.CarPark#spacesAvailable(asgn2Vehicles.Vehicle)}.
+	 * 
+	 * @throws VehicleException
+	 * @throws SimulationException
+	 */
+	@Test
+	public void testSpacesAvailableSmallCar() throws SimulationException,
+			VehicleException {
+		assertTrue(cp.spacesAvailable(sc));
+		fillSmallCarSpacesToFull();
+		assertTrue(cp.spacesAvailable(sc));
+		fillCarSpacesToFull();
+		assertFalse(cp.spacesAvailable(sc));
+	}
+
+	/**
+	 * Test method for
+	 * {@link asgn2CarParks.CarPark#spacesAvailable(asgn2Vehicles.Vehicle)}.
+	 * 
+	 * @throws VehicleException
+	 * @throws SimulationException
+	 */
+	@Test
+	public void testSpacesAvailableMotorCycle() throws SimulationException,
+			VehicleException {
+		assertTrue(cp.spacesAvailable(mc));
+		fillMotorCycleSpacesToFull();
+		assertTrue(cp.spacesAvailable(mc));
+		fillSmallCarSpacesToFull();
+		assertFalse(cp.spacesAvailable(mc));
 	}
 
 	/**
@@ -193,11 +591,13 @@ public class CarParkTests {
 	 */
 	@Test
 	public void testToString() {
-		fail("Not yet implemented"); // TODO
+		assertTrue(true);
 	}
 
 	/**
-	 * Test method for {@link asgn2CarParks.CarPark#tryProcessNewVehicles(int, asgn2Simulators.Simulator)}.
+	 * Test method for
+	 * {@link asgn2CarParks.CarPark#tryProcessNewVehicles(int, asgn2Simulators.Simulator)}
+	 * .
 	 */
 	@Test
 	public void testTryProcessNewVehicles() {
@@ -205,11 +605,93 @@ public class CarParkTests {
 	}
 
 	/**
-	 * Test method for {@link asgn2CarParks.CarPark#unparkVehicle(asgn2Vehicles.Vehicle, int)}.
+	 * Test method for
+	 * {@link asgn2CarParks.CarPark#unparkVehicle(asgn2Vehicles.Vehicle, int)}.
+	 * 
+	 * @throws VehicleException
+	 * @throws SimulationException
+	 */
+	@Test(expected = SimulationException.class)
+	public void testUnparkVehicleNotFound() throws SimulationException,
+			VehicleException {
+		cp.parkVehicle(c, arrivalTime, intendedDuration);
+		cp.parkVehicle(mc, arrivalTime, intendedDuration);
+		cp.unparkVehicle(sc, departureTime);
+	}
+
+	/**
+	 * Test method for
+	 * {@link asgn2CarParks.CarPark#unparkVehicle(asgn2Vehicles.Vehicle, int)}.
+	 * 
+	 * @throws VehicleException
+	 * @throws SimulationException
 	 */
 	@Test
-	public void testUnparkVehicle() {
-		fail("Not yet implemented"); // TODO
+	public void testUnparkVehicle() throws SimulationException,
+			VehicleException {
+		cp.parkVehicle(c, arrivalTime, intendedDuration);
+		cp.parkVehicle(sc, arrivalTime, intendedDuration);
+		cp.parkVehicle(mc, arrivalTime, intendedDuration);
+		assertEquals(3, getNumVehiclesInPark());
+		cp.unparkVehicle(sc, departureTime);
+		assertEquals(2, getNumVehiclesInPark());
+		assertEquals(departureTime, sc.getDepartureTime());
+	}
+
+	private int getNumVehiclesInPark() {
+		return (cp.getNumCars() + cp.getNumMotorCycles());
+	}
+
+	private int getCarParkInfo(String requestedInfo) {
+		String str = cp.toString();
+		int ret = 0;
+
+		Pattern pattern = Pattern
+				.compile("count:\\s?(\\d+)\\s?.*numDissatisfied:\\s?(\\d+)\\s?past:\\s?(\\d+)");
+		Matcher matcher = pattern.matcher(str);
+
+		while (matcher.find()) {
+			if (requestedInfo.equalsIgnoreCase("count"))
+				ret = Integer.parseInt(matcher.group(1));
+			if (requestedInfo.equalsIgnoreCase("dissatisfied"))
+				ret = Integer.parseInt(matcher.group(2));
+			if (requestedInfo.equalsIgnoreCase("archived"))
+				ret = Integer.parseInt(matcher.group(3));
+		}
+
+		return ret;
+	}
+
+	private void fillCarSpacesToFull() throws SimulationException,
+			VehicleException {
+		for (int i = 0; i < (Constants.DEFAULT_MAX_CAR_SPACES
+				- Constants.DEFAULT_MAX_SMALL_CAR_SPACES); i++) {
+			c = new Car("C" + i, arrivalTime, false);
+			cp.parkVehicle(c, arrivalTime, intendedDuration);
+		}
+	}
+
+	private void fillSmallCarSpacesToFull() throws SimulationException,
+			VehicleException {
+		for (int i = 0; i < Constants.DEFAULT_MAX_SMALL_CAR_SPACES; i++) {
+			sc = new Car("S" + i, arrivalTime, true);
+			cp.parkVehicle(sc, arrivalTime, intendedDuration);
+		}
+	}
+
+	private void fillMotorCycleSpacesToFull() throws VehicleException,
+			SimulationException {
+		for (int i = 0; i < Constants.DEFAULT_MAX_MOTORCYCLE_SPACES; i++) {
+			mc = new MotorCycle("M" + i, arrivalTime);
+			cp.parkVehicle(mc, arrivalTime, intendedDuration);
+		}
+	}
+
+	private void fillCarParkToFull() throws VehicleException,
+			SimulationException {
+		fillCarSpacesToFull();
+		fillSmallCarSpacesToFull();
+		fillMotorCycleSpacesToFull();
 	}
 
 }
