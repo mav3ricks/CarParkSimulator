@@ -51,7 +51,7 @@ public class GUISimulator extends JFrame implements Runnable, ActionListener {
 	private Log log;
 	private CarPark carPark;
 	private Simulator sim;
-
+	private boolean inputIString, inputIsPositive;
 
 	/**
 	 * @param arg0
@@ -85,7 +85,7 @@ public class GUISimulator extends JFrame implements Runnable, ActionListener {
 		frame.setPreferredSize(new Dimension(width, height));
 		frame.setLocation(new Point(500, 200));
 		frame.setLayout(new BorderLayout());
-		frame.setResizable(false);
+		frame.setResizable(true);
 		frame.pack();
 		return frame;
 
@@ -202,10 +202,22 @@ public class GUISimulator extends JFrame implements Runnable, ActionListener {
 		jp.add(c, constraints);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Runnable#run()
+	 */
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		
+	}
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 
-	
+		while (inputIString == false) {
+			try {
 
 				seed = Integer.parseInt(seedText.getText());
 				intendedStay = Double.parseDouble(intendedStayMeanText
@@ -219,17 +231,45 @@ public class GUISimulator extends JFrame implements Runnable, ActionListener {
 				maxMCSpaces = Integer.parseInt(maxMCSpacesText.getText());
 				maxQueueSize = Integer.parseInt(maxQueueSizeText.getText());
 
+				if (maxCSpaces < 0 || maxMCSpaces < 0 || maxQueueSize < 0) {
+
+					JOptionPane.showMessageDialog(null,
+							"Invalid Input. Negative value entered.", "Error",
+							JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				if (maxSCSpaces < 0 || maxSCSpaces > maxCSpaces) {
+					JOptionPane.showMessageDialog(
+									null,
+									"Invalid Input. 0 <= maxSmallCarSpaces <= maxCarSpaces",
+									"Error", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+
 				try {
 					sim = new Simulator(seed, intendedStay, stdDeviation,
 							carProb, scProb, mcProb);
+
+					carPark = new CarPark(maxCSpaces, maxSCSpaces, maxMCSpaces,
+							maxQueueSize);
 				} catch (SimulationException e2) {
-					// TODO Auto-generated catch block
-					e2.printStackTrace();
+					JOptionPane.showMessageDialog(null, e2.getMessage(),
+							"Error", JOptionPane.ERROR_MESSAGE);
+					return;
 				}
 
-				carPark = new CarPark(maxCSpaces, maxSCSpaces, maxMCSpaces,
-						maxQueueSize);
-				
+				inputIString = true;
+
+			} catch (Exception exception) {
+
+				JOptionPane.showMessageDialog(null,
+						"Invalid Input. Enter a valid number.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+
+		}
+
 		try {
 			gui.runSimulation();
 		} catch (VehicleException e1) {
@@ -326,13 +366,12 @@ public class GUISimulator extends JFrame implements Runnable, ActionListener {
 				gui.scProbabilityText.setText(args[5]);
 				gui.mcProbabilityText.setText(args[6]);
 
-				
 				gui.maxCSpacesText.setText(args[7]);
 				gui.maxSCSpacesText.setText(args[8]);
 				gui.maxMCSpacesText.setText(args[9]);
 				gui.maxQueueSizeText.setText(args[10]);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
+				
 				e.printStackTrace();
 			}
 
@@ -340,9 +379,7 @@ public class GUISimulator extends JFrame implements Runnable, ActionListener {
 		if (args.length != 11) {
 
 			try {
-				gui.sim = new Simulator();
-				gui.carPark = new CarPark();
-
+				
 				gui.seedText.setText(Integer.toString(Constants.DEFAULT_SEED));
 				gui.intendedStayMeanText.setText(Double
 						.toString(Constants.DEFAULT_INTENDED_STAY_MEAN));
@@ -363,19 +400,13 @@ public class GUISimulator extends JFrame implements Runnable, ActionListener {
 				gui.maxQueueSizeText.setText(Integer
 						.toString(Constants.DEFAULT_MAX_QUEUE_SIZE));
 
-			} catch (SimulationException e) {
+			} catch (Exception e1) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				e1.printStackTrace();
 			}
 
 		}
 		gui.showGUI();
-	}
-
-	@Override
-	public void run() {
-		// TODO Auto-generated method stub
-		
 	}
 
 }
