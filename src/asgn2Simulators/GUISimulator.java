@@ -51,7 +51,9 @@ public class GUISimulator extends JFrame implements Runnable, ActionListener {
 	private Log log;
 	private CarPark carPark;
 	private Simulator sim;
-	private boolean inputIString, inputIsPositive;
+	private boolean inputIString;
+
+	private ChartPanel charts;
 
 	/**
 	 * @param arg0
@@ -59,7 +61,6 @@ public class GUISimulator extends JFrame implements Runnable, ActionListener {
 	 */
 	public GUISimulator(String arg0) throws HeadlessException {
 		super(arg0);
-
 	}
 
 	private void createGUI() {
@@ -210,7 +211,7 @@ public class GUISimulator extends JFrame implements Runnable, ActionListener {
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -239,7 +240,8 @@ public class GUISimulator extends JFrame implements Runnable, ActionListener {
 					return;
 				}
 				if (maxSCSpaces < 0 || maxSCSpaces > maxCSpaces) {
-					JOptionPane.showMessageDialog(
+					JOptionPane
+							.showMessageDialog(
 									null,
 									"Invalid Input. 0 <= maxSmallCarSpaces <= maxCarSpaces",
 									"Error", JOptionPane.ERROR_MESSAGE);
@@ -289,7 +291,10 @@ public class GUISimulator extends JFrame implements Runnable, ActionListener {
 		timePanel = createPanel();
 		mainFrame.setVisible(false);
 		logFrame.setVisible(true);
-		
+
+		barChartPanel.add(charts.createBarChart());
+
+		timePanel.add(charts.createTimeSeriesChart());
 
 		logPanel.add(logText);
 		scrollBar = new JScrollPane(logPanel,
@@ -304,6 +309,8 @@ public class GUISimulator extends JFrame implements Runnable, ActionListener {
 
 	private void runSimulation() throws VehicleException, SimulationException,
 			IOException {
+
+		charts = new ChartPanel();
 
 		logText = createTextArea();
 
@@ -327,10 +334,15 @@ public class GUISimulator extends JFrame implements Runnable, ActionListener {
 			if (newVehiclesAllowed(time)) {
 				carPark.tryProcessNewVehicles(time, sim);
 			}
-			// Log progress
-			log.logEntry(time, carPark);
 
-			logText.append(carPark.getStatus(time));
+			String status = carPark.getStatus(time);
+
+			charts.updateStatistics(status, time);
+
+			// Log progress
+			log.writer.write(status);
+
+			logText.append(status);
 
 		}
 		log.finalise(carPark);
@@ -358,7 +370,7 @@ public class GUISimulator extends JFrame implements Runnable, ActionListener {
 		if (args.length == 11) {
 
 			try {
-				
+
 				gui.seedText.setText(args[1]);
 				gui.intendedStayMeanText.setText(args[2]);
 				gui.stdDeviationText.setText(args[3]);
@@ -371,7 +383,7 @@ public class GUISimulator extends JFrame implements Runnable, ActionListener {
 				gui.maxMCSpacesText.setText(args[9]);
 				gui.maxQueueSizeText.setText(args[10]);
 			} catch (Exception e) {
-				
+
 				e.printStackTrace();
 			}
 
@@ -379,7 +391,7 @@ public class GUISimulator extends JFrame implements Runnable, ActionListener {
 		if (args.length != 11) {
 
 			try {
-				
+
 				gui.seedText.setText(Integer.toString(Constants.DEFAULT_SEED));
 				gui.intendedStayMeanText.setText(Double
 						.toString(Constants.DEFAULT_INTENDED_STAY_MEAN));
