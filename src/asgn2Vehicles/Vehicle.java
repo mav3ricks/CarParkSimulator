@@ -62,6 +62,10 @@ public abstract class Vehicle {
 	 *             if arrivalTime is <= 0
 	 */
 	public Vehicle(String vehID, int arrivalTime) throws VehicleException {
+		if (arrivalTime <= 0)
+			throw new VehicleException(
+					"Vehicle(): Vehicle arrival time must be more than 0, given: "
+							+ arrivalTime);
 		this.vehID = vehID;
 		this.arrivalTime = arrivalTime;
 	}
@@ -83,6 +87,23 @@ public abstract class Vehicle {
 	 */
 	public void enterParkedState(int parkingTime, int intendedDuration)
 			throws VehicleException {
+		if (this.isParked())
+			throw new VehicleException(
+					"Vehicle enterParkedState(): Vehicle is already in park, isParked: "
+							+ this.isParked());
+		if (this.isQueued())
+			throw new VehicleException(
+					"Vehicle enterParkedState(): Vehicle is currently in queue, isQueued: "
+							+ this.isQueued());
+		if (parkingTime <= 0)
+			throw new VehicleException(
+					"Vehicle enterParkedState(): parkingTime must be more than 0, given: "
+							+ parkingTime);
+		if (intendedDuration < Constants.MINIMUM_STAY)
+			throw new VehicleException(
+					"Vehicle enterParkedState(): intendedDuration must be more than "
+							+ Constants.MINIMUM_STAY + " given: "
+							+ intendedDuration);
 		this.parkingTime = parkingTime;
 		this.departureTime = this.parkingTime + intendedDuration;
 		this.isParked = true;
@@ -97,6 +118,14 @@ public abstract class Vehicle {
 	 *             if the vehicle is already in a queued or parked state
 	 */
 	public void enterQueuedState() throws VehicleException {
+		if (this.isQueued())
+			throw new VehicleException(
+					"Vehicle enterQueuedState(): Vehicle is already in queue, isQueued: "
+							+ this.isQueued());
+		if (this.isParked())
+			throw new VehicleException(
+					"Vehicle enterQueuedState(): Vehicle is already in park, isParked: "
+							+ this.isParked());
 		this.isQueued = true;
 	}
 
@@ -110,6 +139,20 @@ public abstract class Vehicle {
 	 *             or if the revised departureTime < parkingTime
 	 */
 	public void exitParkedState(int departureTime) throws VehicleException {
+		if (!this.isParked())
+			throw new VehicleException(
+					"Vehicle exitParkedState: Vehicle is currently not in park, isParked: "
+							+ this.isParked());
+		if (this.isQueued())
+			throw new VehicleException(
+					"Vehicle exitParkedState(): Vehicle is currently in queue, isQueued: "
+							+ this.isQueued());
+		if (departureTime < this.getParkingTime())
+			throw new VehicleException(
+					"Vehicle exitParkedState(): departureTime must not be less than parkingTime, departureTime: "
+							+ departureTime
+							+ ", parkingTime: "
+							+ this.getParkingTime());
 		this.departureTime = departureTime;
 		this.isParked = false;
 		this.wasParked = true;
@@ -127,6 +170,19 @@ public abstract class Vehicle {
 	 *             or if exitTime is not later than arrivalTime for this vehicle
 	 */
 	public void exitQueuedState(int exitTime) throws VehicleException {
+		if (this.isParked())
+			throw new VehicleException(
+					"Vehicle exitQueuedState(): Vehicle is already in park, isParked: "
+							+ this.isParked());
+		if (!this.isQueued())
+			throw new VehicleException(
+					"Vehicle exitQueuedState(): Vehicle is currently not in queue, isQueued: "
+							+ this.isQueued());
+		if (!(exitTime > this.arrivalTime))
+			throw new VehicleException(
+					"Vehicle exitQueuedState(): exitTime must be more than arrivalTime, exitTime"
+							+ exitTime + ", arrivalTime: "
+							+ this.getArrivalTime());
 		this.isQueued = false;
 		this.wasQueued = true;
 		this.parkingTime = exitTime;
