@@ -127,6 +127,14 @@ public class CarPark {
 	 *             if vehicle is currently queued or parked
 	 */
 	public void archiveNewVehicle(Vehicle v) throws SimulationException {
+		if (v.isQueued())
+			throw new SimulationException(
+					"CarPark archiveNewVehicle(): Vehicle is currently in queue, isQueued: "
+							+ v.isQueued());
+		if (v.isParked())
+			throw new SimulationException(
+					"CarPark archiveNewVehicle(): Vehicle is currently in park, isParked: "
+							+ v.isParked());
 		this.archived.add(v);
 		this.numDissatisfied++;
 		this.status += this.setVehicleMsg(v, "N", "A");
@@ -142,7 +150,18 @@ public class CarPark {
 	 *             constraints are violated
 	 */
 	public void archiveQueueFailures(int time) throws VehicleException {
-		
+		for (Vehicle v : this.currentlyQueued) {
+			if (time > v.getArrivalTime() + Constants.MAXIMUM_QUEUE_TIME) {
+				try {
+					this.exitQueue(v, time);
+					this.archived.add(v);
+					this.numDissatisfied++;
+					this.status += this.setVehicleMsg(v, "Q", "A");
+				} catch (SimulationException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	/**
@@ -177,7 +196,12 @@ public class CarPark {
 	 */
 	public void enterQueue(Vehicle v) throws SimulationException,
 			VehicleException {
-		
+		if (this.queueFull())
+			throw new SimulationException(
+					"CarPark enterQueue(): Queue is already full");
+		this.currentlyQueued.add(v);
+		v.enterQueuedState();
+		this.status += this.setVehicleMsg(v, "N", "Q");
 	}
 
 	/**
@@ -196,7 +220,11 @@ public class CarPark {
 	 */
 	public void exitQueue(Vehicle v, int exitTime) throws SimulationException,
 			VehicleException {
-		
+		if (!this.currentlyQueued.contains(v))
+			throw new SimulationException(
+					"CarPark exitQueue(): Vehicle was not found in queue");
+		this.currentlyQueued.remove(v);
+		v.exitQueuedState(exitTime);
 	}
 
 	/**
@@ -324,7 +352,7 @@ public class CarPark {
 	 * @return number of vehicles in the queue
 	 */
 	public int numVehiclesInQueue() {
-	
+		return this.currentlyQueued.size();
 	}
 
 	/**
@@ -346,6 +374,9 @@ public class CarPark {
 	 */
 	public void parkVehicle(Vehicle v, int time, int intendedDuration)
 			throws SimulationException, VehicleException {
+		if (!this.spacesAvailable(v))
+			throw new SimulationException(
+					"CarPark parkVehicle(): No suitable spaces are available for parking");
 		this.currentlyParked.add(v);
 		v.enterParkedState(time, intendedDuration);
 	}
@@ -365,7 +396,16 @@ public class CarPark {
 	 */
 	public void processQueue(int time, Simulator sim) throws VehicleException,
 			SimulationException {
-		
+		while (!this.queueEmpty()) {
+			Vehicle v = this.currentlyQueued.peek();
+			if (this.spacesAvailable(v)) {
+				this.exitQueue(v, time);
+				this.parkVehicle(v, time, sim.setDuration());
+				this.status += this.setVehicleMsg(v, "Q", "P");
+			} else {
+				break;
+			}
+		}
 	}
 
 	/**
@@ -374,7 +414,7 @@ public class CarPark {
 	 * @return true if queue empty, false otherwise
 	 */
 	public boolean queueEmpty() {
-		
+		return this.numVehiclesInQueue() == 0;
 	}
 
 	/**
@@ -383,7 +423,7 @@ public class CarPark {
 	 * @return true if queue full, false otherwise
 	 */
 	public boolean queueFull() {
-		
+		return this.numVehiclesInQueue() == this.maxQueueSize;
 	}
 
 	/**
@@ -476,7 +516,11 @@ public class CarPark {
 				this.parkVehicle(c, time, sim.setDuration());
 				this.status += this.setVehicleMsg(c, "N", "P");
 			} else {
-				this.archiveNewVehicle(c);
+				if (!this.queueFull()) {
+					this.enterQueue(c);
+				} else {
+					this.archiveNewVehicle(c);
+				}
 			}
 		}
 
@@ -488,7 +532,11 @@ public class CarPark {
 				this.parkVehicle(m, time, sim.setDuration());
 				this.status += this.setVehicleMsg(m, "N", "P");
 			} else {
-				this.archiveNewVehicle(m);
+				if (!this.queueFull()) {
+					this.enterQueue(m);
+				} else {
+					this.archiveNewVehicle(m);
+				}
 			}
 		}
 	}
@@ -508,6 +556,9 @@ public class CarPark {
 	 */
 	public void unparkVehicle(Vehicle v, int departureTime)
 			throws VehicleException, SimulationException {
+		if (!this.currentlyParked.contains(v))
+			throw new SimulationException(
+					"CarPark unparkVehicle(): Vehicle not found under list of parked vehicles");
 		this.currentlyParked.remove(v);
 		v.exitParkedState(departureTime);
 	}
