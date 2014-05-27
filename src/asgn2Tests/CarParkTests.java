@@ -12,6 +12,7 @@ package asgn2Tests;
 
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Array;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -64,6 +65,48 @@ public class CarParkTests {
 
 		vehID = "M1";
 		mc = new MotorCycle(vehID, arrivalTime);
+	}
+
+	/*
+	 * Confirm that the API spec has not been violated through the addition of
+	 * public fields, constructors or methods that were not requested
+	 */
+	@Test
+	public void NoExtraPublicMethods() {
+		// Extends Object, extras less toString()
+		final int ExtraMethods = 21;
+		final int NumObjectClassMethods = Array.getLength(Object.class
+				.getMethods());
+		final int NumCarParkClassMethods = Array.getLength(CarPark.class
+				.getMethods());
+		assertTrue(
+				"obj:" + NumObjectClassMethods + ":cp:"
+						+ NumCarParkClassMethods,
+				(NumObjectClassMethods + ExtraMethods) == NumCarParkClassMethods);
+	}
+
+	@Test
+	public void NoExtraPublicFields() {
+		// Same as Vehicle
+		final int NumObjectClassFields = Array.getLength(Object.class
+				.getFields());
+		final int NumCarParkClassFields = Array.getLength(CarPark.class
+				.getFields());
+		assertTrue("obj:" + NumObjectClassFields + ":cp:"
+				+ NumCarParkClassFields,
+				(NumObjectClassFields) == NumCarParkClassFields);
+	}
+
+	@Test
+	public void NoExtraPublicConstructors() {
+		// One extra cons used.
+		final int NumObjectClassConstructors = Array.getLength(Object.class
+				.getConstructors());
+		final int NumCarParkClassConstructors = Array.getLength(CarPark.class
+				.getConstructors());
+		assertTrue(":obj:" + NumObjectClassConstructors + ":cp:"
+				+ NumCarParkClassConstructors,
+				(NumObjectClassConstructors + 1) == NumCarParkClassConstructors);
 	}
 
 	/**
@@ -598,10 +641,20 @@ public class CarParkTests {
 	 * Test method for
 	 * {@link asgn2CarParks.CarPark#tryProcessNewVehicles(int, asgn2Simulators.Simulator)}
 	 * .
+	 * 
+	 * @throws SimulationException
+	 * @throws VehicleException
 	 */
 	@Test
-	public void testTryProcessNewVehicles() {
-		fail("Not yet implemented"); // TODO
+	public void testTryProcessNewVehicles() throws VehicleException, SimulationException {
+		cp.tryProcessNewVehicles(10, sim);
+		int vehInPark = cp.getNumCars() + cp.getNumMotorCycles();
+		assertTrue(vehInPark >= 1);
+		assertTrue(vehInPark <= 2);
+		if (cp.getNumCars() + cp.getNumMotorCycles() == 2) {
+			assertTrue(cp.getNumCars() == 1);
+			assertTrue(cp.getNumMotorCycles() == 1);
+		}
 	}
 
 	/**
@@ -642,6 +695,9 @@ public class CarParkTests {
 		return (cp.getNumCars() + cp.getNumMotorCycles());
 	}
 
+	// Private method to capture CarPark info at a certain minute
+	// Method may return total count of vehicles, total dissatisfied or total
+	// archived
 	private int getCarParkInfo(String requestedInfo) {
 		String str = cp.toString();
 		int ret = 0;
@@ -662,15 +718,16 @@ public class CarParkTests {
 		return ret;
 	}
 
+	// Private method to automatically fill all big car spaces
 	private void fillCarSpacesToFull() throws SimulationException,
 			VehicleException {
-		for (int i = 0; i < (Constants.DEFAULT_MAX_CAR_SPACES
-				- Constants.DEFAULT_MAX_SMALL_CAR_SPACES); i++) {
+		for (int i = 0; i < (Constants.DEFAULT_MAX_CAR_SPACES - Constants.DEFAULT_MAX_SMALL_CAR_SPACES); i++) {
 			c = new Car("C" + i, arrivalTime, false);
 			cp.parkVehicle(c, arrivalTime, intendedDuration);
 		}
 	}
 
+	// Private method to automatically fill all small car spaces
 	private void fillSmallCarSpacesToFull() throws SimulationException,
 			VehicleException {
 		for (int i = 0; i < Constants.DEFAULT_MAX_SMALL_CAR_SPACES; i++) {
@@ -679,6 +736,7 @@ public class CarParkTests {
 		}
 	}
 
+	// Private method to automatically fill all Motor Cycle spaces
 	private void fillMotorCycleSpacesToFull() throws VehicleException,
 			SimulationException {
 		for (int i = 0; i < Constants.DEFAULT_MAX_MOTORCYCLE_SPACES; i++) {
@@ -687,6 +745,7 @@ public class CarParkTests {
 		}
 	}
 
+	// Private method to automatically fill all spaces in Car Park
 	private void fillCarParkToFull() throws VehicleException,
 			SimulationException {
 		fillCarSpacesToFull();

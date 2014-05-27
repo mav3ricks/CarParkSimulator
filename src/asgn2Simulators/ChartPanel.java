@@ -17,6 +17,10 @@ import org.jfree.data.time.Minute;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 
+/*
+ * Class to create bar and time series charts.
+ * @author Daniel 08690995
+ */
 public class ChartPanel {
 
 	final String series1 = "Total";
@@ -28,6 +32,8 @@ public class ChartPanel {
 	final String category3 = "Small Cars";
 	final String category4 = "Motor Cycles";
 
+	// Variables to hold various satisfied/dissatisfied vehicles
+	// Used for bar chart
 	private int satTotal, satBC, satSC, satMC;
 	private int disTotal, disBC, disSC, disMC;
 
@@ -44,7 +50,6 @@ public class ChartPanel {
 	}
 
 	private void initTimeSeriesChart() {
-
 		tsc = new TimeSeriesCollection();
 		vehTotal = new TimeSeries("Count (Total)");
 		vehParked = new TimeSeries("Parked (Total)");
@@ -58,6 +63,7 @@ public class ChartPanel {
 		cal = GregorianCalendar.getInstance();
 	}
 
+	// Public method to return a chart panel consisting of a tabulated bar chart
 	public org.jfree.chart.ChartPanel createBarChart() {
 		DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 
@@ -86,8 +92,9 @@ public class ChartPanel {
 		return chartPanel;
 	}
 
+	// Public method to return a chart panel consisting of a tabulated time
+	// series chart
 	public org.jfree.chart.ChartPanel createTimeSeriesChart() {
-
 		tsc.addSeries(vehTotal);
 		tsc.addSeries(vehParked);
 		tsc.addSeries(carsParked);
@@ -130,12 +137,15 @@ public class ChartPanel {
 		return chartPanel;
 	}
 
+	// Method to capture vehicle transition messages and keep track of
+	// archived or dissatisfied counts
 	public void updateStatistics(String status, int simTime) {
 		Pattern pattern;
 		Matcher matcher;
 
 		String vehClass;
 
+		// Regex to capture successful parking to archived
 		if (status.contains("P>A")) {
 			pattern = Pattern.compile("([C|S|M]):P>A");
 			matcher = pattern.matcher(status);
@@ -151,6 +161,7 @@ public class ChartPanel {
 			}
 		}
 
+		// Regex to capture dissatisfied vehicles
 		if (status.contains("N>A") || status.contains("Q>A")) {
 			pattern = Pattern.compile("([C|S|M]):[N|Q]>A");
 			matcher = pattern.matcher(status);

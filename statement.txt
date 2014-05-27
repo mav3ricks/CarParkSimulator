@@ -1,18 +1,20 @@
-Mohamad Daniel Bin Hamid - 08xxxxxx
+Mohamad Daniel Bin Hamid - 08690995
 Ishaan Singh - 08647917
 
 Statement of contribution:
 
 Daniel
-*CarPark Class
-*Test Classes
-*JFreeChart and Bar Chart
+*CarPark Class (CarPark.java)
+*Test Cases for Car, MotorCycle/Vehicle, CarPark (CarTests.java, MotorCycleTests.java, CarParkTests.java)
+*Bar and Time Series Charts (ChartPanel.java)
 
 Ishaan
-*Vehicle, Car, Motorcyle Class
-*GUISimulator Class
-*GUITests
+*Vehicle, Car, MotorCycle Class (Vehicle.java, Car.java, MotorCycle.java)
+*GUISimulator Class (GUISimulator.java)
+*GUITests (GUITests.pdf)
 
 We agree to the statement of contribution above.
 
-Main method to run the program resides in GUISimulator.java. 
+Main method to run the program resides in GUISimulator.java.
+
+GUI can also be run by using run.bat
