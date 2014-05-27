@@ -105,7 +105,7 @@ public class GUISimulator extends JFrame implements Runnable, ActionListener {
 
 		frame.setLocation(new Point(500, 200));
 		frame.setLayout(new BorderLayout());
-		frame.setResizable(true);
+		frame.setResizable(false);
 		frame.pack();
 
 		return frame;
@@ -498,18 +498,20 @@ public class GUISimulator extends JFrame implements Runnable, ActionListener {
 
 			try {
 
-				gui.seedText.setText(args[1]);
-				gui.carProbabilityText.setText(args[2]);
-				gui.scProbabilityText.setText(args[3]);
-				gui.mcProbabilityText.setText(args[4]);
-				gui.intendedStayMeanText.setText(args[5]);
-				gui.stdDeviationText.setText(args[6]);
+				gui.maxCSpacesText.setText(args[1]);
+				gui.maxSCSpacesText.setText(args[2]);
+				gui.maxMCSpacesText.setText(args[3]);
+				gui.maxQueueSizeText.setText(args[4]);
+				
+				gui.seedText.setText(args[5]);
+				gui.carProbabilityText.setText(args[6]);
+				gui.scProbabilityText.setText(args[7]);
+				gui.mcProbabilityText.setText(args[8]);
+				gui.intendedStayMeanText.setText(args[9]);
+				gui.stdDeviationText.setText(args[10]);
 				
 
-				gui.maxCSpacesText.setText(args[7]);
-				gui.maxSCSpacesText.setText(args[8]);
-				gui.maxMCSpacesText.setText(args[9]);
-				gui.maxQueueSizeText.setText(args[10]);
+			
 			} catch (Exception e) {
 
 				e.printStackTrace();
