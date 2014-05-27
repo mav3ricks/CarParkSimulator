@@ -1,0 +1,90 @@
+commit 9c9ae290933db06e6ccb6f3af3976b561cdfbab3
+Author: mDanielh <mDanielh.25@gmail.com>
+Date:   Tue May 27 19:47:24 2014 +1000
+
+    Final documentation of classes
+
+commit 1d32abf1c68e6ceba8af1a585ef27669aaeb7646
+Author: Ishaan <ishaan.singh@connect.qut.edu.au>
+Date:   Tue May 27 17:44:13 2014 +1000
+
+    Supporting files for submission
+
+commit 2af6fb0edf22369e938afce0412a3257b1efeee7
+Author: Ishaan <ishaan.singh@connect.qut.edu.au>
+Date:   Tue May 27 17:43:01 2014 +1000
+
+    GUI updated CLI arguments
+
+commit 7c4d08ea7a03a1d884927738932a8f5e75af0f2b
+Author: Ishaan <ishaan.singh@connect.qut.edu.au>
+Date:   Tue May 27 13:04:58 2014 +1000
+
+    Added comments and resetted the CLI input
+
+commit 49c233cc49bd955ac6a11819902196fca0e39e18
+Author: mDanielh <mDanielh.25@gmail.com>
+Date:   Mon May 26 20:42:12 2014 +1000
+
+    ChartPanels for GUI
+
+commit 28d62a500c25059989dfac9ac494a539dcabcbf7
+Author: Ishaan <ishaan.singh@connect.qut.edu.au>
+Date:   Mon May 26 18:07:22 2014 +1000
+
+    GUISimulator Class with Input Validation
+
+commit 66811a9d449a9a13b5481848a950e4a763d14168
+Author: Ishaan <ishaan.singh@connect.qut.edu.au>
+Date:   Mon May 26 14:36:25 2014 +1000
+
+    GUISimulator Class w/o Input Validation
+
+commit abf166b1c0f09cdd615b30b0641dd66ce2c2a036
+Author: mDanielh <mDanielh.25@gmail.com>
+Date:   Mon May 26 13:11:18 2014 +1000
+
+    CarPark class with Exceptions
+
+commit 3b13c8fc880a1bf7205f690cb8545ae93c526615
+Merge: 5411c9e 19ac17a
+Author: Ishaan <ishaan.singh@connect.qut.edu.au>
+Date:   Mon May 26 13:07:23 2014 +1000
+
+    Merge branch 'dev' of https://github.com/mav3ricks/CarParkSimulator into dev
+
+commit 5411c9e71aa8b6908a924eb7245ff4d5e20239a7
+Author: Ishaan <ishaan.singh@connect.qut.edu.au>
+Date:   Mon May 26 13:06:42 2014 +1000
+
+    Vehicle Class with Exceptions
+
+commit 19ac17ac925d9045b2deedbe40cb0ff664326998
+Author: mDanielh <mDanielh.25@gmail.com>
+Date:   Mon May 26 10:40:47 2014 +1000
+
+    CarPark class w/o Queue & Exceptions
+
+commit fb132632e2ee7b662ede1af596d0ece88c660bb7
+Author: Ishaan <ishaan.singh@connect.qut.edu.au>
+Date:   Mon May 26 02:31:15 2014 +1000
+
+    Vehicle, Car, MotorCycle class w/o Exceptions
+
+commit fcf73f7773daaaf8bd11602f74a1f8eadc91e155
+Author: mDanielh <mDanielh.25@gmail.com>
+Date:   Sun May 25 23:02:17 2014 +1000
+
+    Test Cases Drop
+
+commit be4ac3b321256a8838b4b97e16608221f9f55b9f
+Author: mav3ricks <mav3ricks@users.noreply.github.com>
+Date:   Sun May 25 22:37:47 2014 +1000
+
+    README.md
+
+commit 06a558938653c57ac5cbd259533160249889a468
+Author: Ishaan <ishaan.singh@connect.qut.edu.au>
+Date:   Sun May 25 22:34:39 2014 +1000
+
+    Initial Code Drop
