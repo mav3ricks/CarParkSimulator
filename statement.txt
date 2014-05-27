@@ -1,0 +1,18 @@
+Mohamad Daniel Bin Hamid - 08xxxxxx
+Ishaan Singh - 08647917
+
+Statement of contribution:
+
+Daniel
+*CarPark Class
+*Test Classes
+*JFreeChart and Bar Chart
+
+Ishaan
+*Vehicle, Car, Motorcyle Class
+*GUISimulator Class
+*GUITests
+
+We agree to the statement of contribution above.
+
+Main method to run the program resides in GUISimulator.java. 
